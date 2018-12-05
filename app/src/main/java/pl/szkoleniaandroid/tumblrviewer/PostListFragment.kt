@@ -1,5 +1,6 @@
 package pl.szkoleniaandroid.tumblrviewer
 
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.databinding.ObservableArrayList
 import android.os.Bundle
@@ -9,6 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import pl.szkoleniaandroid.tumblrviewer.api.model.Post
 import pl.szkoleniaandroid.tumblrviewer.api.model.PostsResponse
@@ -36,6 +39,14 @@ class PostListFragment : Fragment() {
         viewmodel = PostListViewModel()
         binding.viewmodel = viewmodel
 
+        viewmodel.showUrlLiveData.observe(this, Observer<Event<String>> {
+            if(!it.consumed) {
+                val url = it.consume()
+                val intent = Intent(activity, PostActivity::class.java)
+                intent.putExtra("url", url)
+                startActivity(intent)
+            }
+        })
         viewmodel.refresh(url)
 
     }
@@ -58,14 +69,23 @@ class PostListFragment : Fragment() {
 
 }
 
-class PostItem(val title: String, val url: String)
+interface OnPostClickListener {
+    fun onPostClicked(postItem: PostItem)
+}
+
+class PostItem(val title: String, val url: String, val postUrl: String)
 
 class PostListViewModel : ViewModel() {
 
 
+    val showUrlLiveData = MutableLiveData<Event<String>>()
     val posts = ObservableArrayList<PostItem>()
     val itemBinding = ItemBinding.of<PostItem>(BR.item, R.layout.post_item)
-
+        .bindExtra(BR.listener, object : OnPostClickListener {
+            override fun onPostClicked(postItem: PostItem) {
+                showUrlLiveData.value = Event(postItem.postUrl)
+            }
+        })
 
     fun refresh(url: String) {
         val retrofit = Retrofit.Builder()
@@ -90,7 +110,8 @@ class PostListViewModel : ViewModel() {
                     posts.addAll(response.body()!!.response.posts.map {
                         PostItem(
                             it.caption ?: "",
-                            it.photos?.firstOrNull()?.originalSize?.url ?: ""
+                            it.photos?.firstOrNull()?.originalSize?.url ?: "",
+                            it.postUrl
                         )
                     })
                 }

@@ -4,10 +4,12 @@
     <data>
         <import type="pl.szkoleniaandroid.tumblrviewer.R"/>
         <variable name="item" type="pl.szkoleniaandroid.tumblrviewer.PostItem"/>
+        <variable name="listener" type="pl.szkoleniaandroid.tumblrviewer.OnPostClickListener"/>
     </data>
 
     <androidx.cardview.widget.CardView
             app:cardElevation="4dp"
+            android:onClick="@{()->listener.onPostClicked(item)}"
             android:layout_margin="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
