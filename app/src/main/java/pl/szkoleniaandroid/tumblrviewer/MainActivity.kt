@@ -1,5 +1,6 @@
 package pl.szkoleniaandroid.tumblrviewer
 
+import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
@@ -8,10 +9,26 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
-class MainActivity : AppCompatActivity(), com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(),
+    com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener,
+    PostListFragment.PostListCallback {
+
+    override fun showPost(url: String) {
+        if(findViewById<FrameLayout>(R.id.post_container).visibility == View.GONE) {
+            val intent = Intent(this, PostActivity::class.java)
+            intent.putExtra("url", url)
+            startActivity(intent)
+        } else {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.post_container, PostFragment.newInstance(url))
+                .commit()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,7 +36,11 @@ class MainActivity : AppCompatActivity(), com.google.android.material.navigation
         setSupportActionBar(toolbar)
 
         fab.setOnClickListener { view ->
-            com.google.android.material.snackbar.Snackbar.make(view, "Replace with your own action", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+            com.google.android.material.snackbar.Snackbar.make(
+                view,
+                "Replace with your own action",
+                com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+            )
                 .setAction("Action", null).show()
         }
 

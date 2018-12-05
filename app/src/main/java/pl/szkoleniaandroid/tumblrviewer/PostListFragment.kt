@@ -1,5 +1,6 @@
 package pl.szkoleniaandroid.tumblrviewer
 
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.databinding.ObservableArrayList
@@ -25,9 +26,28 @@ import java.net.URL
 
 class PostListFragment : Fragment() {
 
+
+
     private var url: String = ""
     lateinit var binding: PostListFragmentBinding
     lateinit var viewmodel: PostListViewModel
+
+    interface PostListCallback {
+        fun showPost(url: String)
+    }
+
+    var callback: PostListCallback? = null
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        callback = context as PostListCallback
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        callback = null
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = PostListFragmentBinding.inflate(inflater, container, false)
@@ -40,11 +60,11 @@ class PostListFragment : Fragment() {
         binding.viewmodel = viewmodel
 
         viewmodel.showUrlLiveData.observe(this, Observer<Event<String>> {
-            if(!it.consumed) {
-                val url = it.consume()
-                val intent = Intent(activity, PostActivity::class.java)
-                intent.putExtra("url", url)
-                startActivity(intent)
+            if (!it.consumed) {
+                val url = it.consume()!!
+                callback?.showPost(url)
+
+
             }
         })
         viewmodel.refresh(url)
