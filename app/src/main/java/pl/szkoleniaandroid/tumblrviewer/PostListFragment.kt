@@ -20,7 +20,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.net.URL
 
-class PostListFragment : androidx.fragment.app.Fragment() {
+class PostListFragment : Fragment() {
 
     private var url: String = ""
     lateinit var binding: PostListFragmentBinding
@@ -90,7 +90,7 @@ class PostListViewModel : ViewModel() {
                     posts.addAll(response.body()!!.response.posts.map {
                         PostItem(
                             it.caption ?: "",
-                            it.photos.firstOrNull()?.originalSize?.url ?: ""
+                            it.photos?.firstOrNull()?.originalSize?.url ?: ""
                         )
                     })
                 }
